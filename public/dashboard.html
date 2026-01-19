@@ -1042,8 +1042,8 @@
             generateKeyFindings(results);
             const recommendation = generateRecommendation(results);
 
-            // Save to database
-            await saveComparisonToDatabase(siteId, beforeUrl, afterUrl, results, recommendation);
+            // Save to database (Commented out as route was removed)
+            // await saveComparisonToDatabase(siteId, beforeUrl, afterUrl, results, recommendation);
         }
 
         function updateViewportSummary(results) {

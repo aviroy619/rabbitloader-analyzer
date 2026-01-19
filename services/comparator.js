@@ -7,13 +7,11 @@ const sharp = require('sharp');
 
 class PageComparator {
     async capturePage(url, delay = 3000, viewport = { width: 1920, height: 1080 }) {
-        let browser;
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
         try {
-            browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox']
-            });
-
             const page = await browser.newPage();
 
             // Set viewport size

@@ -23,8 +23,13 @@ router.post('/compare-pages', async (req, res) => {
         // Parse viewport with defaults
         const viewportSize = viewport || { width: 1920, height: 1080 };
 
-        console.log('Comparing for ' + siteId + ' with delays: ' + delayArray.join(', ') + 'ms, viewport: ' + viewportSize.width + 'x' + viewportSize.height);
+
+        console.log('🔍 Starting comparison for ' + siteId);
+        console.error('DEBUG: beforeUrl=' + beforeUrl + ', afterUrl=' + afterUrl);
+
         const result = await comparator.comparePages(beforeUrl, afterUrl, delayArray, viewportSize);
+
+        console.error('DEBUG: Comparison result=' + JSON.stringify(result).substring(0, 200));
 
         if (result.status === 'failed') {
             return res.status(500).json(result);
@@ -33,7 +38,7 @@ router.post('/compare-pages', async (req, res) => {
         return res.json(result);
 
     } catch (err) {
-        console.error('Error:', err.message);
+        console.error('🔴 COMPARE ERROR:', err.message, err.stack);
         res.status(500).json({ error: err.message });
     }
 });
