@@ -15,7 +15,7 @@ connectDB();
 
 app.use('/api', require('./routes/analyze'));
 app.use('/api', require('./routes/compare'));
-app.use('/api', require('./routes/comparisonHistory'));
+
 
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', db: 'rabbitloader_analyzer' });
