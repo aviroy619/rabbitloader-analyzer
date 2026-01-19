@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RabbitLoader - Page Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-compare {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-compare:hover {
+            background: #0056b3;
+        }
+
+        .btn-compare:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #007bff;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results {
+            display: none;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 15px;
+        }
+
+        .status-safe {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-broken {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .result-title {
+            font-size: 18px;
+            color: #333;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            background: #fafafa;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .differences {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .differences.show {
+            display: block;
+        }
+
+        .diff-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .diff-item {
+            color: #856404;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+
+        .error-message {
+            display: none;
+            padding: 15px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            color: #721c24;
+            margin-top: 20px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .screenshot-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+
+        .screenshot-title {
+            padding: 12px;
+            background: #f5f5f5;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .screenshot-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 500px;
+            object-fit: contain;
+            background: white;
+        }
+
+        .errors-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 4px;
+        }
+
+        .errors-title {
+            font-weight: 600;
+            color: #c53030;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .error-item {
+            padding: 8px;
+            margin: 8px 0;
+            background: white;
+            border-left: 3px solid #fc8181;
+            border-radius: 2px;
+            font-size: 12px;
+            color: #742a2a;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .visual-changes-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 4px;
+        }
+
+        .visual-changes-title {
+            font-weight: 600;
+            color: #2c5282;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .visual-change-item {
+            padding: 8px;
+            margin: 6px 0;
+            background: white;
+            border-left: 3px solid #63b3ed;
+            border-radius: 2px;
+            font-size: 13px;
+            color: #2c5282;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h1>RabbitLoader Comparison</h1>
+            <button onclick="showHistory()"
+                style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">View
+                History</button>
+        </div>
+        <p class="subtitle">Check if your optimization breaks websites</p>
+
+        <!-- History Modal -->
+        <div id="historyModal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow: auto;">
+            <div
+                style="background: white; margin: 50px auto; max-width: 1200px; border-radius: 8px; padding: 30px; position: relative;">
+                <button onclick="closeHistory()"
+                    style="position: absolute; top: 15px; right: 15px; background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">✕
+                    Close</button>
+                <h2 style="margin-top: 0;">Comparison History</h2>
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="historySearch" placeholder="Filter by Site ID..."
+                        style="padding: 10px; width: 300px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px;">
+                    <select id="historyStatusFilter" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">All Statuses</option>
+                        <option value="SAFE">Safe</option>
+                        <option value="WARNING">Warning</option>
+                        <option value="BROKEN">Broken</option>
+                    </select>
+                    <button onclick="loadHistory()"
+                        style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">🔍
+                        Search</button>
+                </div>
+                <div id="historyTable" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- Screenshot Viewer Modal -->
+        <div id="screenshotModal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; overflow: auto;">
+            <div style="position: relative; padding: 40px;">
+                <button onclick="closeScreenshots()"
+                    style="position: fixed; top: 20px; right: 20px; background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; z-index: 2001;">Close</button>
+                <h2 id="screenshotModalTitle" style="color: white; text-align: center; margin-bottom: 30px;"></h2>
+                <div id="screenshotGrid"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1600px; margin: 0 auto;">
+                    <!-- Screenshots will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="siteId">Site ID (for reference):</label>
+            <input type="text" id="siteId" placeholder="my-site-1">
+        </div>
+
+        <div class="form-group">
+            <label for="beforeUrl">Before URL (without optimization):</label>
+            <input type="url" id="beforeUrl" placeholder="https://example.com/?norl">
+        </div>
+
+        <div class="form-group">
+            <label for="afterUrl">After URL (with your plugin):</label>
+            <input type="url" id="afterUrl" placeholder="https://example.com">
+        </div>
+
+        <div class="form-group">
+            <label>Screenshot Delays (milliseconds):</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <div>
+                    <input type="number" id="delay1" placeholder="1000" value="1000" min="1000" max="15000">
+                    <small style="color: #666; font-size: 11px; display: block; margin-top: 4px;">Delay 1</small>
+                </div>
+                <div>
+                    <input type="number" id="delay2" placeholder="2000" value="2000" min="1000" max="15000">
+                    <small style="color: #666; font-size: 11px; display: block; margin-top: 4px;">Delay 2
+                        (optional)</small>
+                </div>
+                <div>
+                    <input type="number" id="delay3" placeholder="3000" value="3000" min="1000" max="15000">
+                    <small style="color: #666; font-size: 11px; display: block; margin-top: 4px;">Delay 3
+                        (optional)</small>
+                </div>
+            </div>
+            <small style="color: #666; font-size: 12px; margin-top: 8px; display: block;">Time to wait after page loads
+                before taking screenshots. Add up to 3 different delays to see how the page renders over time.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="viewportPreset">Viewport Size (Screen Resolution):</label>
+            <select id="viewportPreset" onchange="updateViewportInputs()"
+                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: inherit;">
+                <option value="1920x1080">Desktop HD - 1920 x 1080 (Large monitors)</option>
+                <option value="1366x768">Desktop Standard - 1366 x 768 (Older monitors)</option>
+                <option value="1440x900">Laptop - 1440 x 900 (MacBook Air)</option>
+                <option value="1024x1366">iPad Pro - 1024 x 1366 (Tablet portrait)</option>
+                <option value="768x1024">iPad - 768 x 1024 (Tablet landscape)</option>
+                <option value="390x844">iPhone 12 Pro - 390 x 844 (Modern phone)</option>
+                <option value="375x667">iPhone SE - 375 x 667 (Smaller phone)</option>
+                <option value="360x800">Galaxy S20 - 360 x 800 (Android phone)</option>
+                <option value="custom">Custom Size...</option>
+            </select>
+            <div id="customViewportInputs"
+                style="display: none; margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Width (px)</label>
+                    <input type="number" id="viewportWidth" placeholder="1920" min="320" max="3840"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div>
+                    <label style="font-size: 12px; color: #666; display: block; margin-bottom: 4px;">Height (px)</label>
+                    <input type="number" id="viewportHeight" placeholder="1080" min="240" max="2160"
+                        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+            </div>
+            <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">Test different screen sizes to
+                find responsive design issues</small>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-compare" onclick="comparePages()">Compare Pages</button>
+            <button class="btn-compare" onclick="testAllViewports()" style="background: #17a2b8;">Test All
+                Viewports</button>
+            <button class="btn-clear" onclick="clearForm()">Clear</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <span>Analyzing pages... this may take 30-60 seconds</span>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="results" id="results">
+            <div class="result-header">
+                <div class="status-badge" id="statusBadge"></div>
+                <div class="result-title" id="resultTitle"></div>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <div class="card-title">Before Optimization</div>
+                    <div class="stat">
+                        <span class="stat-label">JavaScript Errors:</span>
+                        <span class="stat-value" id="beforeErrors">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Console Errors:</span>
+                        <span class="stat-value" id="beforeConsole">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Network Errors:</span>
+                        <span class="stat-value" id="beforeNetwork">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">DOM Elements:</span>
+                        <span class="stat-value" id="beforeElements">0</span>
+                    </div>
+                </div>
+
+                <div class="comparison-card">
+                    <div class="card-title">After Optimization</div>
+                    <div class="stat">
+                        <span class="stat-label">JavaScript Errors:</span>
+                        <span class="stat-value" id="afterErrors">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Console Errors:</span>
+                        <span class="stat-value" id="afterConsole">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Network Errors:</span>
+                        <span class="stat-value" id="afterNetwork">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">DOM Elements:</span>
+                        <span class="stat-value" id="afterElements">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-card" style="margin-top: 20px; background: #f0f8ff; border-left: 4px solid #007bff;">
+                <div class="card-title">Visual Regression (Pixel Match)</div>
+                <div class="stat">
+                    <span class="stat-label">Visual Change:</span>
+                    <span class="stat-value" id="visualPercent">0%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Status:</span>
+                    <span class="stat-value" id="visualStatus">-</span>
+                </div>
+            </div>
+
+            <div class="differences" id="differences">
+                <div class="diff-title">Issues Found:</div>
+                <div id="differencesList"></div>
+            </div>
+
+            <div id="screenshotsContainer" style="display: none; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #333;">📸 Screenshots Comparison</h3>
+                    <button onclick="regenerateScreenshots()"
+                        style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        🔄 Regenerate Screenshots
+                    </button>
+                </div>
+
+                <!-- Editable Delays -->
+                <div
+                    style="background: #f8f9fa; padding: 12px; border-radius: 4px; margin-bottom: 15px; border: 1px solid #dee2e6;">
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 13px; color: #495057;">Screenshot
+                        Delays (edit and click Regenerate):</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div>
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Delay 1
+                                (ms)</label>
+                            <input type="number" id="editDelay1" min="1000" max="15000"
+                                style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Delay 2
+                                (ms)</label>
+                            <input type="number" id="editDelay2" min="1000" max="15000"
+                                style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 13px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 11px; color: #666; display: block; margin-bottom: 4px;">Delay 3
+                                (ms)</label>
+                            <input type="number" id="editDelay3" min="1000" max="15000"
+                                style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 3px; font-size: 13px;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Before Screenshot -->
+                <div class="screenshot-container" style="margin-bottom: 20px;">
+                    <div class="screenshot-title">Before Optimization <span id="delayBeforeLabel"
+                            style="font-size: 11px; color: #666;"></span></div>
+                    <img id="screenshotBefore" class="screenshot-image" alt="Before">
+                </div>
+
+                <!-- After Screenshots (dynamic) -->
+                <div id="afterScreenshotsGrid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+
+            <div class="visual-changes-section" id="visualChangesSection" style="display: none;">
+                <div class="visual-changes-title">🔍 Visual Changes Detected</div>
+                <div id="visualChangesList"></div>
+            </div>
+
+            <div class="errors-section" id="errorsSection" style="display: none;">
+                <div class="errors-title">⚠️ JavaScript Errors</div>
+                <div id="errorsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-Viewport Report Section -->
+    <div class="multi-viewport-report" id="multiViewportReport"
+        style="display: none; margin-top: 40px; padding: 30px; background: #f8f9fa; border-radius: 8px;">
+        <div class="report-header"
+            style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+            <h2 style="margin: 0 0 10px 0; font-size: 24px;">MULTI-VIEWPORT COMPARISON REPORT</h2>
+            <div style="display: flex; justify-content: center; gap: 30px; font-size: 14px; margin-top: 15px;">
+                <div>Site: <strong id="reportSite"></strong></div>
+                <div>Date: <strong id="reportDate"></strong></div>
+                <div>Status: <strong id="reportProgress"></strong></div>
+            </div>
+        </div>
+
+        <div class="report-section" style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 20px;">VIEWPORT SUMMARY (Best
+                Worst)</h3>
+            <div id="viewportSummaryTable"
+                style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+
+        <div class="report-section" style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 20px;">DETAILED BREAKDOWN BY
+                VIEWPORT</h3>
+            <div id="viewportDetails"></div>
+        </div>
+
+        <div class="report-section" style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 20px;">KEY FINDINGS</h3>
+            <div id="keyFindings"
+                style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+
+        <div class="report-section" style="margin-bottom: 30px;">
+            <h3 style="border-bottom: 3px solid #333; padding-bottom: 10px; margin-bottom: 20px;">RECOMMENDATION</h3>
+            <div id="recommendation" style="padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store current comparison data for re-generation
+        let currentComparisonData = null;
+        let viewportResults = []; // Store results for screenshot viewing
+
+        function normalizeUrl(url) {
+            url = url.trim();
+            if (!url) return url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+            return url;
+        }
+
+        function updateViewportInputs() {
+            const preset = document.getElementById('viewportPreset').value;
+            const customInputs = document.getElementById('customViewportInputs');
+
+            if (preset === 'custom') {
+                customInputs.style.display = 'grid';
+            } else {
+                customInputs.style.display = 'none';
+                const [width, height] = preset.split('x');
+                document.getElementById('viewportWidth').value = width;
+                document.getElementById('viewportHeight').value = height;
+            }
+        }
+
+        function getViewport() {
+            const preset = document.getElementById('viewportPreset').value;
+            let width, height;
+
+            if (preset === 'custom') {
+                width = parseInt(document.getElementById('viewportWidth').value) || 1920;
+                height = parseInt(document.getElementById('viewportHeight').value) || 1080;
+            } else {
+                [width, height] = preset.split('x').map(v => parseInt(v));
+            }
+
+            return { width, height };
+        }
+
+        async function comparePages() {
+            const siteId = document.getElementById('siteId').value;
+            let beforeUrl = document.getElementById('beforeUrl').value;
+            let afterUrl = document.getElementById('afterUrl').value;
+
+            // Normalize URLs - add https:// if missing
+            beforeUrl = normalizeUrl(beforeUrl);
+            afterUrl = normalizeUrl(afterUrl);
+
+            // Update input fields with normalized URLs
+            document.getElementById('beforeUrl').value = beforeUrl;
+            document.getElementById('afterUrl').value = afterUrl;
+
+            // Collect delay values
+            const delays = [];
+            const delay1 = parseInt(document.getElementById('delay1').value);
+            const delay2 = parseInt(document.getElementById('delay2').value);
+            const delay3 = parseInt(document.getElementById('delay3').value);
+
+            if (delay1 && delay1 > 0) delays.push(delay1);
+            if (delay2 && delay2 > 0) delays.push(delay2);
+            if (delay3 && delay3 > 0) delays.push(delay3);
+
+            if (delays.length === 0) delays.push(3000); // Default
+
+            const errorDiv = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+
+            errorDiv.classList.remove('show');
+            results.style.display = 'none';
+
+            if (!siteId || !beforeUrl || !afterUrl) {
+                errorDiv.textContent = 'Please fill in all fields';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            loading.style.display = 'block';
+            document.querySelector('.btn-compare').disabled = true;
+
+            try {
+                const viewport = getViewport();
+                const response = await fetch('/api/compare-pages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ siteId, beforeUrl, afterUrl, delays: delays, viewport: viewport })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Comparison failed');
+                }
+
+                displayResults(data);
+
+                // Store data for regeneration
+                currentComparisonData = {
+                    siteId: siteId,
+                    beforeUrl: beforeUrl,
+                    afterUrl: afterUrl
+                };
+
+            } catch (err) {
+                errorDiv.textContent = 'Error: ' + err.message;
+                errorDiv.classList.add('show');
+            } finally {
+                loading.style.display = 'none';
+                document.querySelector('.btn-compare').disabled = false;
+            }
+        }
+
+        async function regenerateScreenshots() {
+            if (!currentComparisonData) {
+                alert('No comparison data available. Please run a comparison first.');
+                return;
+            }
+
+            // Get edited delay values
+            const delays = [];
+            const delay1 = parseInt(document.getElementById('editDelay1').value);
+            const delay2 = parseInt(document.getElementById('editDelay2').value);
+            const delay3 = parseInt(document.getElementById('editDelay3').value);
+
+            if (delay1 && delay1 > 0) delays.push(delay1);
+            if (delay2 && delay2 > 0) delays.push(delay2);
+            if (delay3 && delay3 > 0) delays.push(delay3);
+
+            if (delays.length === 0) {
+                alert('Please enter at least one valid delay value.');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('errorMessage');
+
+            loading.style.display = 'block';
+            errorDiv.classList.remove('show');
+
+            try {
+                const response = await fetch('/api/compare-pages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        siteId: currentComparisonData.siteId,
+                        beforeUrl: currentComparisonData.beforeUrl,
+                        afterUrl: currentComparisonData.afterUrl,
+                        delays: delays,
+                        viewport: getViewport()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Regeneration failed');
+                }
+
+                displayResults(data);
+
+            } catch (err) {
+                errorDiv.textContent = 'Error: ' + err.message;
+                errorDiv.classList.add('show');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            const statusBadge = document.getElementById('statusBadge');
+            const resultTitle = document.getElementById('resultTitle');
+
+            document.getElementById('beforeErrors').textContent = data.before.errors;
+            document.getElementById('beforeConsole').textContent = data.before.consoleErrors;
+            document.getElementById('beforeNetwork').textContent = data.before.networkErrors;
+            document.getElementById('beforeElements').textContent = data.before.elements;
+
+            document.getElementById('afterErrors').textContent = data.after.errors;
+            document.getElementById('afterConsole').textContent = data.after.consoleErrors;
+            document.getElementById('afterNetwork').textContent = data.after.networkErrors;
+            document.getElementById('afterElements').textContent = data.after.elements;
+
+            // Display visual regression results
+            document.getElementById('visualPercent').textContent = data.visual.percentChanged + '%';
+            document.getElementById('visualStatus').textContent = data.visual.status === 'OK' ? '✅ No Breaking Changes' : '⚠️ Visual Changes Detected';
+
+            // Display screenshots
+            if (data.screenshots) {
+                const screenshotsContainer = document.getElementById('screenshotsContainer');
+                const afterGrid = document.getElementById('afterScreenshotsGrid');
+
+                // Set before screenshot
+                document.getElementById('screenshotBefore').src = data.screenshots.before;
+                const delaySeconds = (data.delays[0] / 1000).toFixed(1);
+                const viewportInfo = data.viewport ? ' | ' + data.viewport.width + 'x' + data.viewport.height + 'px' : '';
+                document.getElementById('delayBeforeLabel').textContent = '(after ' + delaySeconds + 's' + viewportInfo + ')';
+
+                // Clear and populate after screenshots
+                afterGrid.innerHTML = '';
+
+                if (Array.isArray(data.screenshots.after)) {
+                    data.screenshots.after.forEach((afterShot, index) => {
+                        const container = document.createElement('div');
+                        container.className = 'screenshot-container';
+
+                        const title = document.createElement('div');
+                        title.className = 'screenshot-title';
+                        const delayS = (afterShot.delay / 1000).toFixed(1);
+                        title.innerHTML = 'After Optimization #' + (index + 1) + ' <span style="font-size: 11px; color: #666;">(after ' + delayS + 's' + viewportInfo + ')</span>';
+
+                        const img = document.createElement('img');
+                        img.className = 'screenshot-image';
+                        img.src = afterShot.url;
+                        img.alt = 'After ' + (index + 1);
+
+                        container.appendChild(title);
+                        container.appendChild(img);
+                        afterGrid.appendChild(container);
+                    });
+                } else {
+                    // Fallback for single screenshot (backward compatibility)
+                    const container = document.createElement('div');
+                    container.className = 'screenshot-container';
+                    container.innerHTML = '<div class="screenshot-title">After Optimization</div><img class="screenshot-image" src="' + data.screenshots.after + '" alt="After">';
+                    afterGrid.appendChild(container);
+                }
+
+                // Populate editable delay fields
+                if (data.delays && data.delays.length > 0) {
+                    document.getElementById('editDelay1').value = data.delays[0] || '';
+                    document.getElementById('editDelay2').value = data.delays[1] || '';
+                    document.getElementById('editDelay3').value = data.delays[2] || '';
+                }
+
+                screenshotsContainer.style.display = 'block';
+            }
+
+            // Display JS errors
+            if (data.after.errorDetails && data.after.errorDetails.length > 0) {
+                const errorsSection = document.getElementById('errorsSection');
+                const errorsList = document.getElementById('errorsList');
+                errorsList.innerHTML = '';
+                data.after.errorDetails.forEach(error => {
+                    const item = document.createElement('div');
+                    item.className = 'error-item';
+                    item.textContent = error.substring(0, 200);
+                    if (error.length > 200) item.textContent += '...';
+                    errorsList.appendChild(item);
+                });
+                errorsSection.style.display = 'block';
+            }
+
+            // Display visual changes
+            if (data.visual.status === 'VISUAL_BREAK') {
+                const visualSection = document.getElementById('visualChangesSection');
+                const visualList = document.getElementById('visualChangesList');
+                visualList.innerHTML = `
+                    <div class="visual-change-item">📊 ${data.visual.percentChanged}% of pixels changed (${data.visual.pixelsChanged.toLocaleString()} pixels)</div>
+                    <div class="visual-change-item">🎨 Layout, colors, or element positioning may have changed</div>
+                `;
+                visualSection.style.display = 'block';
+            }
+
+            if (data.isBroken) {
+                statusBadge.textContent = '⚠️ BROKEN';
+                statusBadge.className = 'status-badge status-broken';
+                resultTitle.textContent = 'Your optimization broke this website';
+                showDifferences(data.differences, data.visual);
+            } else {
+                statusBadge.textContent = '✅ SAFE';
+                statusBadge.className = 'status-badge status-safe';
+                resultTitle.textContent = 'Your optimization is safe for this website';
+                document.getElementById('differences').style.display = 'none';
+            }
+
+            results.style.display = 'block';
+        }
+
+        function showDifferences(diffs, visual) {
+            const container = document.getElementById('differences');
+            const list = document.getElementById('differencesList');
+            list.innerHTML = '';
+
+            if (visual && visual.status === 'VISUAL_BREAK') {
+                list.innerHTML += '<div class="diff-item">❌ Visual regression detected: ' + visual.percentChanged + '% pixels changed</div>';
+            }
+
+            if (diffs.newErrors.length > 0) {
+                list.innerHTML += '<div class="diff-item">❌ ' + diffs.newErrors.length + ' new JavaScript errors</div>';
+            }
+
+            if (diffs.newConsoleErrors.length > 0) {
+                list.innerHTML += '<div class="diff-item">❌ ' + diffs.newConsoleErrors.length + ' new console errors</div>';
+            }
+
+            if (diffs.domChanges.elementCountChanged) {
+                list.innerHTML += '<div class="diff-item">❌ DOM element count changed</div>';
+            }
+
+            if (diffs.domChanges.formsChanged) {
+                list.innerHTML += '<div class="diff-item">❌ Form elements changed</div>';
+            }
+
+            if (diffs.domChanges.inputsChanged) {
+                list.innerHTML += '<div class="diff-item">❌ Input elements changed</div>';
+            }
+
+            if (list.innerHTML) {
+                container.classList.add('show');
+            }
+        }
+
+        async function testAllViewports() {
+            const siteId = document.getElementById('siteId').value;
+            let beforeUrl = document.getElementById('beforeUrl').value;
+            let afterUrl = document.getElementById('afterUrl').value;
+
+            // Normalize URLs
+            beforeUrl = normalizeUrl(beforeUrl);
+            afterUrl = normalizeUrl(afterUrl);
+
+            if (!siteId || !beforeUrl || !afterUrl) {
+                alert('Please fill in Site ID, Before URL, and After URL');
+                return;
+            }
+
+            const viewports = [
+                { name: 'Desktop HD', size: '1920x1080', width: 1920, height: 1080 },
+                { name: 'Desktop Standard', size: '1366x768', width: 1366, height: 768 },
+                { name: 'Laptop', size: '1440x900', width: 1440, height: 900 },
+                { name: 'Tablet', size: '1024x768', width: 1024, height: 768 },
+                { name: 'iPad Portrait', size: '768x1024', width: 768, height: 1024 },
+                { name: 'iPhone', size: '375x667', width: 375, height: 667 }
+            ];
+
+            const delays = [1000, 2000, 3000]; // Use default delays
+
+            // Show report section
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('multiViewportReport').style.display = 'block';
+            document.getElementById('reportSite').textContent = beforeUrl.replace('https://', '').split('/')[0];
+            document.getElementById('reportDate').textContent = new Date().toLocaleString();
+            document.getElementById('reportProgress').textContent = 'Testing...';
+
+            const results = [];
+
+            for (let i = 0; i < viewports.length; i++) {
+                const viewport = viewports[i];
+                document.getElementById('reportProgress').textContent = `Testing ${i + 1} of ${viewports.length}: ${viewport.name}...`;
+
+                try {
+                    const response = await fetch('/api/compare-pages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            siteId,
+                            beforeUrl,
+                            afterUrl,
+                            delays,
+                            viewport: { width: viewport.width, height: viewport.height }
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        results.push({
+                            viewport: viewport,
+                            data: data
+                        });
+
+                        // Update summary table progressively
+                        updateViewportSummary(results);
+
+                        // Update detailed breakdowns progressively
+                        generateDetailedBreakdowns(results);
+                    } else {
+                        results.push({
+                            viewport: viewport,
+                            data: { status: 'failed', error: data.error || 'Unknown error' }
+                        });
+
+                        // Update even on failure
+                        updateViewportSummary(results);
+                        generateDetailedBreakdowns(results);
+                    }
+                } catch (err) {
+                    console.error('Error testing viewport:', err);
+                    results.push({
+                        viewport: viewport,
+                        data: { status: 'failed', error: err.message }
+                    });
+
+                    // Update even on error
+                    updateViewportSummary(results);
+                    generateDetailedBreakdowns(results);
+                }
+            }
+
+            // Generate final report sections
+            document.getElementById('reportProgress').textContent = 'Complete';
+            generateKeyFindings(results);
+            const recommendation = generateRecommendation(results);
+
+            // Save to database
+            await saveComparisonToDatabase(siteId, beforeUrl, afterUrl, results, recommendation);
+        }
+
+        function updateViewportSummary(results) {
+            // Sort by visual change (best to worst)
+            const sorted = [...results].sort((a, b) => {
+                const aChange = a.data.visual ? a.data.visual.percentChanged : 100;
+                const bChange = b.data.visual ? b.data.visual.percentChanged : 100;
+                return aChange - bChange;
+            });
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background: #f0f0f0; border-bottom: 2px solid #ddd;">';
+            html += '<th style="padding: 12px; text-align: left;">Viewport</th>';
+            html += '<th style="padding: 12px; text-align: center;">Status</th>';
+            html += '<th style="padding: 12px; text-align: right;">Visual Change</th>';
+            html += '</tr></thead><tbody>';
+
+            sorted.forEach(result => {
+                // Better status detection with fallback
+                let status = result.data.statusLevel;
+                if (!status) {
+                    // Calculate status from visual change if not provided
+                    const visualChange = result.data.visual ? result.data.visual.percentChanged : 0;
+                    if (visualChange > 5) status = 'BROKEN';
+                    else if (visualChange > 2) status = 'WARNING';
+                    else status = 'SAFE';
+                }
+
+                const statusColor = status === 'SAFE' ? '#28a745' : status === 'WARNING' ? '#ffc107' : '#dc3545';
+                const statusText = status === 'SAFE' ? 'SAFE' : status === 'WARNING' ? 'WARNING' : 'BROKEN';
+                const visualChange = result.data.visual ? result.data.visual.percentChanged.toFixed(1) + '%' : 'N/A';
+
+                html += `<tr style="border-bottom: 1px solid #eee;">`;
+                html += `<td style="padding: 12px;"><strong>${result.viewport.size}</strong> (${result.viewport.name})</td>`;
+                html += `<td style="padding: 12px; text-align: center; color: ${statusColor}; font-weight: bold;">${statusText}</td>`;
+                html += `<td style="padding: 12px; text-align: right;">${visualChange}</td>`;
+                html += `</tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('viewportSummaryTable').innerHTML = html;
+        }
+
+        function generateDetailedBreakdowns(results) {
+            viewportResults = results; // Store for screenshot viewing
+            let html = '';
+            results.forEach((result, index) => {
+                const data = result.data;
+
+                // Better status detection with fallback
+                let status = data.statusLevel;
+                if (!status) {
+                    const visualChange = data.visual ? data.visual.percentChanged : 0;
+                    if (visualChange > 5) status = 'BROKEN';
+                    else if (visualChange > 2) status = 'WARNING';
+                    else status = 'SAFE';
+                }
+
+                const statusColor = status === 'SAFE' ? '#28a745' : status === 'WARNING' ? '#ffc107' : '#dc3545';
+                const statusText = status === 'SAFE' ? 'SAFE' : status === 'WARNING' ? 'WARNING' : 'BROKEN';
+
+                html += `<div style="background: white; margin-bottom: 15px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">`;
+                html += `<div onclick="toggleViewportDetail(${index})" style="padding: 15px; background: ${statusColor}; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">`;
+                html += `<div><strong>${result.viewport.size} (${result.viewport.name})</strong> - ${statusText}</div>`;
+                html += `<div id="toggleIcon${index}">▼</div>`;
+                html += `</div>`;
+                html += `<div id="viewportDetail${index}" style="display: none; padding: 20px; font-size: 14px;">`;
+
+                if (data.visual) {
+                    html += `<div style="margin-bottom: 15px;">`;
+
+                    // Add View Screenshots button
+                    if (data.screenshots) {
+                        html += `<button onclick="viewScreenshots(${index}, '${result.viewport.size}')" style="padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 15px; font-size: 13px;">View Screenshots</button><br>`;
+                    }
+
+                    html += `<strong>Visual Change:</strong> ${data.visual.percentChanged.toFixed(1)}%<br>`;
+                    html += `<strong>JavaScript Errors:</strong> Before ${data.before.errors} → After ${data.after.errors}`;
+
+                    // Show detailed issues if available
+                    if (data.detailedIssues && data.detailedIssues.length > 0) {
+                        html += `<br><br><strong style="color: #dc3545;">Issues Found (${data.detailedIssues.length}):</strong>`;
+                        html += `<div style="margin-top: 10px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">`;
+
+                        data.detailedIssues.slice(0, 10).forEach((issue, idx) => {
+                            const severityColor = issue.severity === 'CRITICAL' ? '#dc3545' : issue.severity === 'HIGH' ? '#fd7e14' : issue.severity === 'MEDIUM' ? '#ffc107' : '#6c757d';
+                            html += `<div style="margin-bottom: 10px; padding: 8px; background: white; border-radius: 4px;">`;
+                            html += `<div style="font-weight: bold; color: ${severityColor};">${idx + 1}. ${issue.type.replace(/_/g, ' ')}</div>`;
+                            html += `<div style="font-size: 12px; color: #666; margin-top: 4px;">Element: <code>${issue.element}</code></div>`;
+                            html += `<div style="font-size: 12px; margin-top: 4px;">${issue.detail}</div>`;
+                            html += `</div>`;
+                        });
+
+                        if (data.detailedIssues.length > 10) {
+                            html += `<div style="font-size: 12px; color: #666; margin-top: 10px;">... and ${data.detailedIssues.length - 10} more issues</div>`;
+                        }
+
+                        html += `</div>`;
+                    }
+
+                    if (data.errors && data.errors.javascript.length > 0) {
+                        html += `<div style="margin-top: 8px; padding-left: 20px;">`;
+                        data.errors.javascript.slice(0, 3).forEach(err => {
+                            html += `<div style="color: #dc3545; font-family: monospace; font-size: 12px;">├─ "${err.substring(0, 100)}${err.length > 100 ? '...' : ''}"</div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `<br><strong>Console Errors:</strong> Before ${data.before.consoleErrors} → After ${data.after.consoleErrors}<br>`;
+                    html += `<strong>Network Errors:</strong> Before ${data.before.networkErrors} → After ${data.after.networkErrors}<br>`;
+                    html += `<strong>DOM Elements:</strong> Before ${data.before.elements} → After ${data.after.elements}`;
+                    if (data.differences && data.differences.domChanges) {
+                        const diff = data.differences.domChanges.elementCountDiff;
+                        html += ` (${diff >= 0 ? '+' : ''}${diff} elements)<br>`;
+                        html += `<strong>Forms:</strong> Before ${data.before.forms} → After ${data.after.forms} (${data.differences.domChanges.formsDiff >= 0 ? '+' : ''}${data.differences.domChanges.formsDiff})<br>`;
+                        html += `<strong>Buttons:</strong> Before ${data.before.buttons} → After ${data.after.buttons} (${data.differences.domChanges.buttonsDiff >= 0 ? '+' : ''}${data.differences.domChanges.buttonsDiff})<br>`;
+                        html += `<strong>Images:</strong> Before ${data.before.images} → After ${data.after.images} (${data.differences.domChanges.imagesDiff >= 0 ? '+' : ''}${data.differences.domChanges.imagesDiff})`;
+                    }
+                    html += `</div>`;
+                }
+
+                html += `</div></div>`;
+            });
+
+            document.getElementById('viewportDetails').innerHTML = html;
+        }
+
+        function toggleViewportDetail(index) {
+            const detail = document.getElementById(`viewportDetail${index}`);
+            const icon = document.getElementById(`toggleIcon${index}`);
+            if (detail.style.display === 'none') {
+                detail.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                detail.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        function generateKeyFindings(results) {
+            const safe = results.filter(r => r.data.statusLevel === 'SAFE');
+            const warning = results.filter(r => r.data.statusLevel === 'WARNING');
+            const broken = results.filter(r => r.data.statusLevel === 'BROKEN');
+
+            let html = '<div style="line-height: 1.8;">';
+            html += `<div style="margin-bottom: 10px;"><strong>✅ Safe Viewports:</strong> ${safe.map(r => r.viewport.size).join(', ') || 'None'}</div>`;
+            html += `<div style="margin-bottom: 10px;"><strong>⚠️ Warning Viewports:</strong> ${warning.map(r => r.viewport.size).join(', ') || 'None'}</div>`;
+            html += `<div style="margin-bottom: 15px;"><strong>❌ Broken Viewports:</strong> ${broken.map(r => r.viewport.size).join(', ') || 'None'}</div>`;
+
+            if (broken.length > 0) {
+                html += '<div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin-top: 15px;">';
+                html += '<strong>PROBLEM IDENTIFIED:</strong><br>';
+                const smallestSafe = safe.length > 0 ? Math.min(...safe.map(r => r.viewport.width)) : 0;
+                const largestBroken = broken.length > 0 ? Math.max(...broken.map(r => r.viewport.width)) : 0;
+                if (largestBroken < smallestSafe) {
+                    html += `└─ Optimization breaks responsive design at viewport < ${smallestSafe}px<br>`;
+                }
+                const maxVisualChange = Math.max(...broken.map(r => r.data.visual ? r.data.visual.percentChanged : 0));
+                html += `└─ Maximum visual change: ${maxVisualChange.toFixed(1)}% on ${broken.find(r => r.data.visual && r.data.visual.percentChanged === maxVisualChange).viewport.size}<br>`;
+                html += '</div>';
+            }
+
+            html += '</div>';
+            document.getElementById('keyFindings').innerHTML = html;
+        }
+
+        function generateRecommendation(results) {
+            const broken = results.filter(r => r.data.statusLevel === 'BROKEN');
+            const warning = results.filter(r => r.data.statusLevel === 'WARNING');
+
+            let html = '';
+            let bgColor = '#d4edda';
+            let borderColor = '#28a745';
+            let recommendation = '';
+
+            if (broken.length >= 3) {
+                bgColor = '#f8d7da';
+                borderColor = '#dc3545';
+                recommendation = '⚠️ DO NOT DEPLOY - Plugin breaks multiple viewports severely';
+            } else if (broken.length > 0) {
+                bgColor = '#fff3cd';
+                borderColor = '#ffc107';
+                recommendation = '⚠️ DEPLOY WITH CAUTION - Some viewports have issues';
+            } else if (warning.length > 0) {
+                bgColor = '#fff3cd';
+                borderColor = '#ffc107';
+                recommendation = '✅ SAFE TO DEPLOY - Minor warnings only';
+            } else {
+                recommendation = '✅ SAFE TO DEPLOY - All viewports passed';
+            }
+
+            html += `<div style="background: ${bgColor}; padding: 20px; border-left: 4px solid ${borderColor};">`;
+            html += `<div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">${recommendation}</div>`;
+
+            if (broken.length > 0 || warning.length > 0) {
+                html += '<div style="margin-top: 15px;"><strong>ACTION REQUIRED:</strong><br>';
+                html += '<ol style="margin: 10px 0; padding-left: 20px;">';
+                if (broken.length > 0) {
+                    html += '<li>Fix responsive CSS for broken viewports</li>';
+                    html += '<li>Debug JavaScript errors on affected screens</li>';
+                    html += '<li>Restore missing DOM elements</li>';
+                }
+                html += '<li>Test after fixes on all viewports again</li>';
+                html += '</ol></div>';
+            }
+
+            html += '</div>';
+            document.getElementById('recommendation').innerHTML = html;
+
+            // Return recommendation object for database storage
+            return {
+                status: broken.length >= 3 ? 'DO_NOT_DEPLOY' : broken.length > 0 ? 'DEPLOY_WITH_CAUTION' : warning.length > 0 ? 'SAFE_TO_DEPLOY' : 'SAFE_TO_DEPLOY',
+                severity: broken.length >= 3 ? 'CRITICAL' : broken.length > 0 ? 'WARNING' : 'OK',
+                overallStatus: broken.length > 0 ? 'BROKEN' : warning.length > 0 ? 'WARNING' : 'SAFE'
+            };
+        }
+
+        async function saveComparisonToDatabase(siteId, beforeUrl, afterUrl, results, recommendation) {
+            try {
+                const safe = results.filter(r => r.data.statusLevel === 'SAFE');
+                const warning = results.filter(r => r.data.statusLevel === 'WARNING');
+                const broken = results.filter(r => r.data.statusLevel === 'BROKEN');
+
+                const maxVisualChange = Math.max(...results.map(r => r.data.visual ? r.data.visual.percentChanged : 0));
+                const totalJsErrors = results.reduce((sum, r) => sum + (r.data.errors ? r.data.errors.javascript.length : 0), 0);
+
+                const payload = {
+                    siteId,
+                    beforeUrl,
+                    afterUrl,
+                    status: recommendation.overallStatus,
+                    recommendation: recommendation.status,
+                    severity: recommendation.severity,
+                    viewports: results.map(r => ({
+                        size: r.viewport.size,
+                        name: r.viewport.name,
+                        width: r.viewport.width,
+                        height: r.viewport.height,
+                        status: r.data.statusLevel || 'UNKNOWN',
+                        visualChange: r.data.visual ? r.data.visual.percentChanged : null,
+                        jsErrors: r.data.errors ? r.data.errors.javascript : [],
+                        consoleErrors: r.data.errors ? r.data.errors.console : [],
+                        networkErrors: r.data.errors ? r.data.errors.network : [],
+                        domChanges: r.data.differences ? r.data.differences.domChanges : {},
+                        before: r.data.before || {},
+                        after: r.data.after || {},
+                        screenshots: r.data.screenshots || {}
+                    })),
+                    summary: {
+                        totalViewports: results.length,
+                        safeViewports: safe.length,
+                        warningViewports: warning.length,
+                        brokenViewports: broken.length,
+                        maxVisualChange,
+                        totalJsErrors
+                    },
+                    delays: [1000, 2000, 3000]
+                };
+
+                const response = await fetch('/api/save-comparison', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('Comparison saved to database:', data.reportId);
+                } else {
+                    console.error('Failed to save comparison:', data.error);
+                }
+            } catch (err) {
+                console.error('Error saving to database:', err.message);
+            }
+        }
+
+        function showHistory() {
+            document.getElementById('historyModal').style.display = 'block';
+            loadHistory();
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        async function loadHistory() {
+            const siteId = document.getElementById('historySearch').value;
+            const status = document.getElementById('historyStatusFilter').value;
+
+            try {
+                let url = '/api/comparison-history?limit=50';
+                if (siteId) url += '&siteId=' + encodeURIComponent(siteId);
+                if (status) url += '&status=' + status;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to load history');
+                }
+
+                displayHistory(data.results);
+            } catch (err) {
+                document.getElementById('historyTable').innerHTML = '<div style="padding: 20px; text-align: center; color: #dc3545;">Error loading history: ' + err.message + '</div>';
+            }
+        }
+
+        function displayHistory(results) {
+            if (results.length === 0) {
+                document.getElementById('historyTable').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">No comparison history found</div>';
+                return;
+            }
+
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+            html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">';
+            html += '<th style="padding: 12px; text-align: left;">Date</th>';
+            html += '<th style="padding: 12px; text-align: left;">Site ID</th>';
+            html += '<th style="padding: 12px; text-align: center;">Status</th>';
+            html += '<th style="padding: 12px; text-align: center;">Recommendation</th>';
+            html += '<th style="padding: 12px; text-align: right;">Safe/Total</th>';
+            html += '<th style="padding: 12px; text-align: right;">Max Visual Change</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach(result => {
+                const date = new Date(result.timestamp).toLocaleString();
+                const statusColor = result.status === 'SAFE' ? '#28a745' : result.status === 'WARNING' ? '#ffc107' : '#dc3545';
+                const statusIcon = result.status === 'SAFE' ? '✅' : result.status === 'WARNING' ? '⚠️' : '❌';
+
+                html += '<tr style="border-bottom: 1px solid #dee2e6; cursor: pointer;" onclick="viewReport(\'' + result._id + '\')" onmouseover="this.style.background=\'#f8f9fa\'" onmouseout="this.style.background=\'white\'">';
+                html += '<td style="padding: 12px;">' + date + '</td>';
+                html += '<td style="padding: 12px;"><strong>' + result.siteId + '</strong></td>';
+                html += '<td style="padding: 12px; text-align: center; color: ' + statusColor + '; font-weight: bold;">' + statusIcon + ' ' + result.status + '</td>';
+                html += '<td style="padding: 12px; text-align: center; font-size: 12px;">' + result.recommendation.replace(/_/g, ' ') + '</td>';
+                html += '<td style="padding: 12px; text-align: right;">' + result.summary.safeViewports + '/' + result.summary.totalViewports + '</td>';
+                html += '<td style="padding: 12px; text-align: right;">' + result.summary.maxVisualChange.toFixed(1) + '%</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('historyTable').innerHTML = html;
+        }
+
+        async function viewReport(reportId) {
+            try {
+                const response = await fetch('/api/reports/' + reportId);
+                const report = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(report.error || 'Failed to load report');
+                }
+
+                // Close history modal
+                closeHistory();
+
+                // Populate report data
+                document.getElementById('reportSite').textContent = report.siteId;
+                document.getElementById('reportDate').textContent = new Date(report.timestamp).toLocaleString();
+                document.getElementById('reportProgress').textContent = 'Loaded from history';
+
+                // Convert report data to results format
+                const results = report.viewports.map(vp => ({
+                    viewport: { name: vp.name, size: vp.size, width: vp.width, height: vp.height },
+                    data: {
+                        statusLevel: vp.status,
+                        visual: { percentChanged: vp.visualChange || 0 },
+                        before: vp.before,
+                        after: vp.after,
+                        errors: {
+                            javascript: vp.jsErrors || [],
+                            console: vp.consoleErrors || [],
+                            network: vp.networkErrors || []
+                        },
+                        differences: { domChanges: vp.domChanges || {} }
+                    }
+                }));
+
+                // Show report
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('multiViewportReport').style.display = 'block';
+
+                updateViewportSummary(results);
+                generateDetailedBreakdowns(results);
+                generateKeyFindings(results);
+                generateRecommendation(results);
+
+            } catch (err) {
+                alert('Error loading report: ' + err.message);
+            }
+        }
+
+        function viewScreenshots(index, viewportSize) {
+            const result = viewportResults[index];
+            if (!result || !result.data || !result.data.screenshots) {
+                alert('Screenshots not available for this viewport');
+                return;
+            }
+
+            const screenshots = result.data.screenshots;
+            document.getElementById('screenshotModalTitle').textContent = `Screenshots - ${viewportSize}`;
+
+            let html = '';
+
+            // Before screenshot
+            html += `<div style="text-align: center;">`;
+            html += `<h3 style="color: white; margin-bottom: 15px;">Before Optimization</h3>`;
+            html += `<img src="${screenshots.before}" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="Before">`;
+            html += `</div>`;
+
+            // After screenshots (show all delays)
+            if (Array.isArray(screenshots.after)) {
+                screenshots.after.forEach((afterShot, idx) => {
+                    html += `<div style="text-align: center;">`;
+                    html += `<h3 style="color: white; margin-bottom: 15px;">After Optimization (${(afterShot.delay / 1000).toFixed(1)}s)</h3>`;
+                    html += `<img src="${afterShot.url}" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="After ${idx + 1}">`;
+                    html += `</div>`;
+                });
+            } else {
+                html += `<div style="text-align: center;">`;
+                html += `<h3 style="color: white; margin-bottom: 15px;">After Optimization</h3>`;
+                html += `<img src="${screenshots.after}" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);" alt="After">`;
+                html += `</div>`;
+            }
+
+            document.getElementById('screenshotGrid').innerHTML = html;
+            document.getElementById('screenshotModal').style.display = 'block';
+        }
+
+        function closeScreenshots() {
+            document.getElementById('screenshotModal').style.display = 'none';
+        }
+
+        function clearForm() {
+            document.getElementById('siteId').value = '';
+            document.getElementById('beforeUrl').value = '';
+            document.getElementById('afterUrl').value = '';
+            document.getElementById('delay1').value = '1000';
+            document.getElementById('delay2').value = '2000';
+            document.getElementById('delay3').value = '3000';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('multiViewportReport').style.display = 'none';
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+    </script>
+</body>
+
+</html>

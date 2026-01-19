@@ -1,0 +1,82 @@
+
+# Node modules & dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Output & Screenshots
+output/
+screenshots/
+public/reports/
+reports/
+
+# Logs
+logs/
+*.log
+log/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+mongodb.log
+
+# Temp files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# OS Files
+.DS_Store
+Thumbs.db
+.thumbs.db
+ehthumbs.db
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+.vim
+*.iml
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache
+.next
+out
+
+# Build
+dist/
+build/
+
+# System
+.system
+.env.system
+
+# Sensitive data
+secrets.json
+credentials.json
+private_key.pem
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Misc
+.DS_Store
+*.pem
+*.key
+.env.production
+
+# Puppeteer cache
+~/.cache/puppeteer/
+.puppeteer/
