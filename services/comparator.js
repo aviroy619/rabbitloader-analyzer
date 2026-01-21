@@ -4,6 +4,7 @@ const path = require('path');
 const pixelmatch = require('pixelmatch');
 const { PNG } = require('pngjs');
 const sharp = require('sharp');
+const { detectCustomScripts } = require('../detectors/scripts');
 
 class PageComparator {
     async capturePage(url, delay = 3000, viewport = { width: 1920, height: 1080 }) {
@@ -109,6 +110,7 @@ class PageComparator {
                 };
             });
 
+            const fullHtml = await page.content();
             const screenshotPath = path.join(__dirname, '../output/screenshot-' + Date.now() + '.png');
             await page.screenshot({ path: screenshotPath });
 
@@ -120,6 +122,7 @@ class PageComparator {
                 consoleErrors: consoleMessages,
                 networkErrors: networkErrors,
                 dom: domSnapshot,
+                fullHtml: fullHtml,
                 screenshot: screenshotPath
             };
 
@@ -210,9 +213,27 @@ class PageComparator {
         // Analyze detailed issues
         console.log('Analyzing detailed issues...');
         const detailedIssues = this.analyzeElementChanges(
-            before.dom.elementDetails || [],
             primaryAfter.dom.elementDetails || []
         );
+
+        // Detect scripts in after HTML
+        if (primaryAfter.fullHtml) {
+            console.log('Detecting custom scripts...');
+            const scripts = detectCustomScripts(primaryAfter.fullHtml);
+            scripts.forEach(script => {
+                detailedIssues.push({
+                    type: 'RISKY_SCRIPT',
+                    severity: script.risk === 'HIGH' ? 'CRITICAL' : 'MEDIUM',
+                    element: 'script',
+                    tag: 'script',
+                    detail: `Found ${script.type} script: ${script.src || 'inline'}`,
+                    script: script.src, // Path for dashboard
+                    before: null,
+                    after: { src: script.src }
+                });
+            });
+        }
+
 
         // Generate highlighted screenshot if there are changes
         let highlightedScreenshot = null;

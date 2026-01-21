@@ -1126,19 +1126,72 @@
                     // Show detailed issues if available
                     if (data.detailedIssues && data.detailedIssues.length > 0) {
                         html += `<br><br><strong style="color: #dc3545;">Issues Found (${data.detailedIssues.length}):</strong>`;
-                        html += `<div style="margin-top: 10px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">`;
+                        html += `<div style="margin-top: 10px; border-left: 4px solid #ffc107; border-radius: 4px; overflow: hidden;">`;
 
-                        data.detailedIssues.slice(0, 10).forEach((issue, idx) => {
-                            const severityColor = issue.severity === 'CRITICAL' ? '#dc3545' : issue.severity === 'HIGH' ? '#fd7e14' : issue.severity === 'MEDIUM' ? '#ffc107' : '#6c757d';
-                            html += `<div style="margin-bottom: 10px; padding: 8px; background: white; border-radius: 4px;">`;
-                            html += `<div style="font-weight: bold; color: ${severityColor};">${idx + 1}. ${issue.type.replace(/_/g, ' ')}</div>`;
-                            html += `<div style="font-size: 12px; color: #666; margin-top: 4px;">Element: <code>${issue.element}</code></div>`;
-                            html += `<div style="font-size: 12px; margin-top: 4px;">${issue.detail}</div>`;
-                            html += `</div>`;
+                        // Group issues by script
+                        const issuesByScript = {};
+                        const generalIssues = [];
+
+                        data.detailedIssues.forEach(issue => {
+                            if (issue.script) {
+                                if (!issuesByScript[issue.script]) {
+                                    issuesByScript[issue.script] = [];
+                                }
+                                issuesByScript[issue.script].push(issue);
+                            } else {
+                                generalIssues.push(issue);
+                            }
                         });
 
-                        if (data.detailedIssues.length > 10) {
-                            html += `<div style="font-size: 12px; color: #666; margin-top: 10px;">... and ${data.detailedIssues.length - 10} more issues</div>`;
+                        // Helper to render issue list
+                        const renderIssues = (issues, startIndex) => {
+                            let content = '';
+                            issues.forEach((issue, idx) => {
+                                const severityColor = issue.severity === 'CRITICAL' ? '#dc3545' : issue.severity === 'HIGH' ? '#fd7e14' : issue.severity === 'MEDIUM' ? '#ffc107' : '#6c757d';
+                                content += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #eee;">`;
+                                content += `<div style="font-weight: bold; color: ${severityColor};">${startIndex + idx + 1}. ${issue.type.replace(/_/g, ' ')}</div>`;
+                                content += `<div style="font-size: 12px; color: #666; margin-top: 4px;">Element: <code>${issue.element}</code></div>`;
+                                content += `<div style="font-size: 12px; margin-top: 4px;">${issue.detail}</div>`;
+                                content += `</div>`;
+                            });
+                            return content;
+                        };
+
+                        let globalIndex = 0;
+
+                        // Render Script Groups
+                        Object.keys(issuesByScript).forEach((scriptPath, groupIdx) => {
+                            const groupIssues = issuesByScript[scriptPath];
+                            const groupId = `script-group-${index}-${groupIdx}`;
+
+                            html += `<div style="background: #fff3cd; margin-bottom: 2px;">`;
+                            html += `<div onclick="toggleGroup('${groupId}')" style="padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #856404;">`;
+                            html += `<div>📄 ${scriptPath.split('/').pop()} <span style="font-weight: normal; font-size: 12px; background: #856404; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">${groupIssues.length} issues</span></div>`;
+                            html += `<div id="icon-${groupId}">▼</div>`;
+                            html += `</div>`;
+
+                            html += `<div id="${groupId}" style="display: none; padding: 10px 15px; background: #fdfdfe;">`;
+                            html += `<div style="font-size: 11px; color: #999; margin-bottom: 10px; font-family: monospace;">Full Path: ${scriptPath}</div>`;
+                            html += renderIssues(groupIssues, globalIndex);
+                            html += `</div>`;
+                            html += `</div>`;
+
+                            globalIndex += groupIssues.length;
+                        });
+
+                        // Render General Issues
+                        if (generalIssues.length > 0) {
+                            const groupId = `general-group-${index}`;
+                            html += `<div style="background: #e2e3e5; margin-bottom: 2px;">`;
+                            html += `<div onclick="toggleGroup('${groupId}')" style="padding: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #383d41;">`;
+                            html += `<div>🧩 General / HTML Issues <span style="font-weight: normal; font-size: 12px; background: #383d41; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 8px;">${generalIssues.length} issues</span></div>`;
+                            html += `<div id="icon-${groupId}">▼</div>`;
+                            html += `</div>`;
+
+                            html += `<div id="${groupId}" style="display: none; padding: 10px 15px; background: #fdfdfe;">`;
+                            html += renderIssues(generalIssues, globalIndex);
+                            html += `</div>`;
+                            html += `</div>`;
                         }
 
                         html += `</div>`;
@@ -1485,6 +1538,17 @@
             document.getElementById('results').style.display = 'none';
             document.getElementById('multiViewportReport').style.display = 'none';
             document.getElementById('errorMessage').classList.remove('show');
+        }
+        function toggleGroup(groupId) {
+            const group = document.getElementById(groupId);
+            const icon = document.getElementById(`icon-${groupId}`);
+            if (group.style.display === 'none') {
+                group.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                group.style.display = 'none';
+                icon.textContent = '▼';
+            }
         }
     </script>
 </body>
